@@ -5,9 +5,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login,logout,authenticate
 import json
 from .models import Chat
-
+import datetime
+from user.models import User_profile
 @login_required(login_url='/login/')
 def index(request):
+    b=User_profile.objects.all()
     return render(request,'chat/index.html')
 
 
@@ -18,7 +20,11 @@ def room(request,room_name):
     user=request.user
     chat_model=Chat.objects.filter(room_name=room_name)
     members=Chat.objects.get(room_name=room_name).members.all()
-    
+    b=User_profile.objects.filter(user__in=members)
+    users_profile=User_profile.objects.filter(user__in=members)
+    user_profile = User_profile.objects.filter(user=user)[0]
+    print(user_profile)
+
     if not chat_model.exists():
         chat= Chat.objects.create(room_name=room_name)
         chat.members.add(user)
@@ -28,7 +34,9 @@ def room(request,room_name):
     context={
         'room_name':room_name,
         'username':mark_safe(json.dumps(username)),
-        'members':members
+        'members':members,
+        'users_profile':users_profile,
+        'user_profile': user_profile
     }
 
     return render(request, 'chat/room.html', context)

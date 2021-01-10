@@ -17,12 +17,13 @@
   </head>
 
 <body>
+
   <div id="frame">
     <div id="sidepanel">
       <div id="profile">
         <div class="wrap">
-          <img id="profile-img" src="http://emilcarlsson.se/assets/mikeross.png" class="online" alt="" />
-          <p>Mike Ross</p>
+          <img id="profile-img" style="display: inline-block; width:65px; height:65px;" src="{{ user_profile.img.url}}" class="online" alt="" />
+          <p>{{ user_profile.user.username}}</p>
           <i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
           <div id="status-options">
             <ul>
@@ -48,28 +49,30 @@
       </div>
       <div id="contacts">
         <ul>
-            {% for i in members %}
+
+            {%for i in users_profile %}
+
           <li class="contact">
             <div class="wrap">
+            {% if i.online %}
               <span class="contact-status online"></span>
-              <img src="http://emilcarlsson.se/assets/louislitt.png" alt="" />
+            {% else %}
+            <span class="contact-status busy"></span>
+            {% endif %}
+              <img <img style="display: inline-block; width:50px; height:50px;" src="{{ i.img.url}}" alt="" />
               <div class="meta">
                 <p class="name">{{i}}</p>
-                <p class="preview">You just got LITT up, Mike.</p>
+              {% if i.online %}
+                <p class="preview">online</p>
+              {% else %}
+                <p class="preview">{% if i.last_seen %}{{ i.last_seen|timesince }}{% else %}awhile{% endif %} ago</p>
+              {% endif %}
               </div>
             </div>
           </li>
+
             {% endfor %}
-          <li class="contact active">
-            <div class="wrap">
-              <span class="contact-status busy"></span>
-              <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-              <div class="meta">
-                <p class="name">Harvey Specter</p>
-                <p class="preview">Wrong. You take the gun, or you pull out a bigger one. Or, you call their bluff. Or, you do any one of a hundred and forty six other things.</p>
-              </div>
-            </div>
-          </li>
+
         </ul>
       </div>
       <div id="bottom-bar">
@@ -79,8 +82,8 @@
     </div>
     <div class="content">
       <div class="contact-profile">
-        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-        <p>{{ username }}</p>
+        <img style="display: inline-block; width:65px; height:65px;" src="{{ user_profile.img.url}}" alt="" />
+        <p>{{ user_profile.user.username }}</p>
         <div class="social-media">
           <i class="fa fa-facebook" aria-hidden="true"></i>
           <i class="fa fa-twitter" aria-hidden="true"></i>
