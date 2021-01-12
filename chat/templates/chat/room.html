@@ -92,20 +92,22 @@
       </div>
       <div class="messages">
         <ul id="chat-log">
-          {% comment %} <li class="sent">
-            <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
+            {% comment %}
+           <li class="sent">
+            <img style="display: inline-block; width:100px; height:100px; src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
             <p>How the hell am I supposed to get a jury to believe you when I am not even sure that I do?!</p>
           </li>
           <li class="replies">
-            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+            <img style="display: inline-block; width:100px; height:100px; src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
             <p>When you're backed against the wall, break the god damn thing down.</p>
-          </li> {% endcomment %}
+          </li>{% endcomment %}
+
         </ul>
       </div>
       <div class="message-input">
         <div class="wrap">
         <input id="chat-message-input" type="text" placeholder="Write your message..." />
-        <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
+        <i class="fa fa-paperclip attachment" aria-hidden="true" onclick="document.getElementById('inp').click();"></i>
         <button id="chat-message-submit" class="submit">
           <i class="fa fa-paper-plane" aria-hidden="true"></i>
         </button>
@@ -114,6 +116,22 @@
     </div>
   </div>
 
+  <script>
+       scrollToBottom = () => {
+        this.messagesEnd.scrollIntoView({ behavior: "smooth" });
+    }
+
+    componentDidMount() {
+        this.scrollToBottom();
+    }
+
+    componentDidUpdate() {
+        this.scrollToBottom();
+    }
+  </script>
+
+    <input id="inp" type='file' style="display:none" >
+    <p id="b64"></p>
 
     {{ room_name|json_script:"room-name" }}
 
@@ -121,6 +139,7 @@
     <script src="{% static 'chat/js/reconnecting-websocket.js' %}"></script>
 
     <script>
+
 
       var username = {{ username }}
       const roomName = JSON.parse(document.getElementById('room-name').textContent);
@@ -150,11 +169,20 @@
             }
           }
 
-          else {
+          else if (data['command'] === "new_message" ){
             createMessage(data);
             }
 
+          else if(data['command'] === 'img'){
+
+            createMessage(data);
+
+
+          }
+
       };
+
+
 
 
       chatSocket.onclose = function(e) {
@@ -182,21 +210,73 @@
 
       function createMessage(data) {
         var author = data["__str__"];
-        var msgListTag = document.createElement('li');
-        var imgTag = document.createElement('img');
-        var pTag = document.createElement('p');
-        pTag.textContent = data.content;
-        imgTag.src = "";
+        var command = data['command'];
 
+        if(command == "img"){
+
+          var msgListTag = document.createElement('li');
+          var imgTag = document.createElement('img');
+          var imgTag1 = document.createElement('img');
+          imgTag1.style="display: inline-block; width:200px; height:200px; border-radius: 50px;";
+          imgTag.src = 'http://emilcarlsson.se/assets/mikeross.png';
+
+          imgTag1.src = data['content'];
+          msgListTag.appendChild(imgTag);
+          msgListTag.appendChild(imgTag1);
+        }
+
+        else{
+
+          var msgListTag = document.createElement('li');
+          var imgTag = document.createElement('img');
+          var pTag = document.createElement('p');
+          pTag.textContent = data.content;
+          msgListTag.appendChild(imgTag);
+          msgListTag.appendChild(pTag);
+          imgTag.src = 'http://emilcarlsson.se/assets/mikeross.png';
+
+        }
         if (author === username) {
+
           msgListTag.className = 'sent';
         } else {
           msgListTag.className = 'replies';
         }
-        msgListTag.appendChild(pTag);
+
         document.querySelector('#chat-log').appendChild(msgListTag);
 
+     
+
+
+
       }
+
+
+
+
+      function readFile() {
+
+        if (this.files && this.files[0]) {
+
+          var FR= new FileReader();
+
+          FR.addEventListener("load", function(e) {
+
+            chatSocket.send(JSON.stringify({
+              'content': e.target.result,
+              'command': 'img',
+              '__str__' : username,
+              'roomname': roomName
+          }));
+          });
+
+          FR.readAsDataURL( this.files[0] );
+        }
+
+      }
+
+      document.getElementById("inp").addEventListener("change", readFile);
+
 
 
     </script>
