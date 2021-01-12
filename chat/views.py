@@ -19,14 +19,17 @@ def room(request,room_name):
     username=request.user.username
     user=request.user
     chat_model=Chat.objects.filter(room_name=room_name)
-    members=Chat.objects.get(room_name=room_name).members.all()
-    b=User_profile.objects.filter(user__in=members)
+    try:
+        members=Chat.objects.get(room_name=room_name).members.all()
+    except:
+        members=''
+
     users_profile=User_profile.objects.filter(user__in=members)
     user_profile = User_profile.objects.filter(user=user)[0]
-    print(user_profile)
+
 
     if not chat_model.exists():
-        chat= Chat.objects.create(room_name=room_name)
+        chat = Chat.objects.create(room_name=room_name)
         chat.members.add(user)
     else:
         chat_model[0].members.add(user)
