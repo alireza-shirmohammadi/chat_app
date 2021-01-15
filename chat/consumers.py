@@ -5,6 +5,7 @@ from .serializers import MessageSerializer
 from .models import Message,Chat
 from rest_framework.renderers import JSONRenderer
 from django.contrib.auth.models import User
+
 class ChatConsumer(WebsocketConsumer):
     def new_message(self, data):
         author=data['username']
@@ -15,6 +16,7 @@ class ChatConsumer(WebsocketConsumer):
         message_model=Message.objects.create(author=user,content=message,room_name=room)
         result=self.message_serializer(message_model)
         result=eval(result)
+        print(result)
 
         self.sent_to_chat_message(result)
 
@@ -24,6 +26,7 @@ class ChatConsumer(WebsocketConsumer):
         qs=Message.last_message(self,room_name)
 
         message_json=self.message_serializer(qs)
+
         content={
             'message':eval(message_json),
             'command':'fetch_message'
@@ -84,12 +87,15 @@ class ChatConsumer(WebsocketConsumer):
 
     def sent_to_chat_message(self,message):
         command = message.get("command", None)
-
+        print(message['timestamp'])
         async_to_sync(self.channel_layer.group_send)(
+
             self.room_group_name,
             {
                 'type':'chat_message',
                 'content':message['content'],
+                'timestamp':message['timestamp'],
+
                 'command':(lambda command : "img" if( command == "img") else "new_message")(command),
                 '__str__':message['__str__']
 

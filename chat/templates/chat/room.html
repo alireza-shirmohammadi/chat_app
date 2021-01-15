@@ -96,12 +96,14 @@
            <li class="sent">
             <img style="display: inline-block; width:100px; height:100px; src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
             <p>How the hell am I supposed to get a jury to believe you when I am not even sure that I do?!</p>
+            <small> 11:25 </small>
           </li>
           <li class="replies">
             <img style="display: inline-block; width:100px; height:100px; src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
             <p>When you're backed against the wall, break the god damn thing down.</p>
-          </li>{% endcomment %}
-
+              <small> 11:25 </small>
+          </li>
+            {% endcomment %}
         </ul>
       </div>
       <div class="message-input">
@@ -116,19 +118,7 @@
     </div>
   </div>
 
-  <script>
-       scrollToBottom = () => {
-        this.messagesEnd.scrollIntoView({ behavior: "smooth" });
-    }
 
-    componentDidMount() {
-        this.scrollToBottom();
-    }
-
-    componentDidUpdate() {
-        this.scrollToBottom();
-    }
-  </script>
 
     <input id="inp" type='file' style="display:none" >
     <p id="b64"></p>
@@ -211,6 +201,8 @@
       function createMessage(data) {
         var author = data["__str__"];
         var command = data['command'];
+        var timestamp = data['timestamp']
+
 
         if(command == "img"){
 
@@ -218,6 +210,7 @@
           var imgTag = document.createElement('img');
           var imgTag1 = document.createElement('img');
           imgTag1.style="display: inline-block; width:200px; height:200px; border-radius: 50px;";
+          imgTag.style="display: inline-block; width:50px; height:50px; border-radius: 50px;";
           imgTag.src = 'http://emilcarlsson.se/assets/mikeross.png';
 
           imgTag1.src = data['content'];
@@ -230,17 +223,31 @@
           var msgListTag = document.createElement('li');
           var imgTag = document.createElement('img');
           var pTag = document.createElement('p');
+          var smallTag = document.createElement('small');
           pTag.textContent = data.content;
+          smallTag.textContent = Math.round((new Date().getTime() - new Date(data.timestamp).getTime())/60000) + ' minutes ago'
           msgListTag.appendChild(imgTag);
           msgListTag.appendChild(pTag);
-          imgTag.src = 'http://emilcarlsson.se/assets/mikeross.png';
+          msgListTag.appendChild(smallTag);
+          imgTag.style="display: inline-block; width:50px; height:50px; border-radius: 50px;";
 
         }
         if (author === username) {
 
+          imgTag.src = '{{ user_profile.img.url}}';
+
           msgListTag.className = 'sent';
-        } else {
-          msgListTag.className = 'replies';
+
+        }
+        else {
+        {% for i in users_profile %}
+          var a ='{{ i }}';
+            if (author === a){
+                imgTag.src = '{{ i.img.url}}';
+            }
+              {% endfor %}
+
+        msgListTag.className = 'replies';
         }
 
         document.querySelector('#chat-log').appendChild(msgListTag);
